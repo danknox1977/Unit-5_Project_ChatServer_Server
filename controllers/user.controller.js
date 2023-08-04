@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const { response } = require("express");
-const User = require("../models/users.model");
+const { User } = require("../models")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT;
@@ -14,7 +14,7 @@ const testingBcrypt = (password) => {
 router.post("/signup", async (req, res) => {
 
   try {
-    // creating a new object based off the Users Model Schema
+    // creating a new object based off the User.Model Schema
     const user = new User({
       username: req.body.username,
       email: req.body.email,
