@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { Room, Message } = require("../models")
+const { Room, Message } = require("../models");
 const validateSession = require("../middleware/validate-session");
 // const { validate } = require('../models/user.model');
 const { error, success, incomplete } = require("../helpers");
@@ -58,62 +58,46 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
   try {
     //1. Pull value from paramter, body, req.user
     const messageId = req.params.MESSAGEID;
-    const text = req.body;
+    const newText = req.body.text;
     const userId = req.user._id;
-    const updatedInfoA = { text: req.body.text, date: new Date() };
+    const updatedInfoA = { text: newText, date: new Date() };
 
-    const filterA = { _id: messageId, ownerId: userId };
+    // const roomIdString = roomToUpdate.toString();
+    const messageIdString = messageId.toString();
+    // const textString = newText.toString();
 
     //3. Use method to locate document based off ID and pass in new info.
-    const returnOption = { new: true };
+  
 
-    const updated = await Message.findOneAndUpdate(
-      filterA,
+    const updatedMessage = await Message.findOneAndUpdate(
+      { _id: messageId, ownerId: userId },
       updatedInfoA,
-      returnOption
+      { new: true }
     );
 
-    // if (!updated) {
-    //   incomplete(res);
-    // }
-    // //4. Respond to client.
-    // success(res, updated);
+    const roomToUpdate = await Room.findOneAndUpdate({ "messages._id": messageIdString, ownerId: userId }, { $set: {
+      "messages.$.text": newText, // Using the positional operator $ to update the text field of the matched message
+    }}, { new: true });
 
-    // const updatedRoom = await Room.findOneAndUpdate(
-    //     { _id : updated.roomId },
-    //     { $set: { `messages'.$[].text`: `${req.body.text}`,
-    //     [`messages.$[aF].date`]: new Date } },
-    //     { arrayFilters: [
-    //         { 'aF._id': messageId }
-    //     ],
-    // }
     
-    // );
-   
-    // const updatedInfoB = { "text": req.body.text, "date": new Date() };
-    // const filterB = {  };
-    // const room2update = await Room.find( {_id: updated.roomId} );
-    // Room.findOneAndUpdate( { "messages.id": messageId }, updatedInfoB)
-    // log(room2update);
+    log(userId)
+    log(messageId);
+    log(roomToUpdate);
+    
+    // log(roomIdString);
+    log(messageIdString);
+    // log(textString);
 
-    let messageIdCode = {messageId: `${messageId}`}
-    let dataToBeUpdated = {text: `${req.body.text}`, date: new Date }
+  
+  
 
-    await Room.findOneAndUpdate({ _id: updated.roomId, {messages.id: messageId}}, 
-    
-    {$set: {"messages.$": dataToBeUpdated}})
-      log(updated.roomId)
-        log(messageIdCode)
-        log(messageId)
-    // const updatedRoomMessage = 
-   
-    
-    if (!updated) {
+    if (!updatedMessage /* || !roomToUpdate */) {
       incomplete(res);
     }
     //4. Respond to client.
-    success(res, updated);
+    success(res, updatedMessage, roomToUpdate);
   } catch (err) {
+    console.error("Error in the catch block:", err.stack);
     error(res, err);
   }
 });

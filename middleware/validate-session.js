@@ -10,7 +10,9 @@ const validateSession = async(req,res,next) => {
         req.user = user;
         return next(); 
     } catch (err) {
-        res.json({message: err.message});
+        `Error: ${err.message}`
+        console.log(err)
+        // res.json({message: err.message});
     }
 }
 
