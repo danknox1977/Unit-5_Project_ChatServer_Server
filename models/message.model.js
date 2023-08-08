@@ -12,11 +12,11 @@ const MessageSchema = new mongoose.Schema({
   },
   ownerId: {
     type: mongoose.Types.ObjectId,
-    ref: "user" 
+    ref: "user",
   },
   roomId: {
     type: mongoose.Types.ObjectId,
-    ref: "room"
+    ref: "room",
   },
 });
 

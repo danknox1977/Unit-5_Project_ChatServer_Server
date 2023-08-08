@@ -24,7 +24,7 @@ router.post("/:ROOMID/", validateSession, async (req, res) => {
     //3. Use mongoose method to save to MongoDB
     const newMessage = await message.save();
     const roomMessage = {
-      id: newMessage._id,
+      id: newMessage.id,
       text: newMessage.text,
       date: newMessage.date,
     };
@@ -62,40 +62,44 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
     const userId = req.user._id;
     const updatedInfoA = { text: newText, date: new Date() };
 
-    // const roomIdString = roomToUpdate.toString();
     const messageIdString = messageId.toString();
     // const textString = newText.toString();
 
     //3. Use method to locate document based off ID and pass in new info.
-  
 
     const updatedMessage = await Message.findOneAndUpdate(
       { _id: messageId, ownerId: userId },
       updatedInfoA,
       { new: true }
     );
-
-    const roomToUpdate = await Room.findOneAndUpdate({ "messages._id": messageIdString, ownerId: userId }, { $set: {
-      "messages.$.text": newText, // Using the positional operator $ to update the text field of the matched message
-    }}, { new: true });
-
-    
-    log(userId)
-    log(messageId);
-    log(roomToUpdate);
-    
-    // log(roomIdString);
-    log(messageIdString);
-    // log(textString);
-
-  
-  
-
-    if (!updatedMessage /* || !roomToUpdate */) {
-      incomplete(res);
+    if (!updatedMessage) {
+      return res
+        .status(404)
+        .json({ message: "Invalid Message/Owner Combination" });
     }
-    //4. Respond to client.
-    success(res, updatedMessage, roomToUpdate);
+
+    const roomIdString = updatedMessage.roomId.toString();
+
+    const roomToUpdate = await Room.findOneAndUpdate(
+      { _id: roomIdString, "messages.id": messageIdString },
+      {
+        $set: {
+          "messages.$.text": newText,
+          "messages.$.date": new Date(),
+        },
+      },
+      { new: true }
+    );
+    if (!roomToUpdate) {
+      return res
+        .status(404)
+        .json({ message: "Invalid Message/Room Combination" });
+    }
+
+    // 4. Respond to client.
+    res
+      .status(200)
+      .json({ message: "Message text has been updated", updatedMessage });
   } catch (err) {
     console.error("Error in the catch block:", err.stack);
     error(res, err);
@@ -106,28 +110,46 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
 router.delete("/:MESSAGEID", validateSession, async (req, res) => {
   try {
     //1. Capture ID
-    const { id } = req.params;
+    const messageId = req.params.MESSAGEID;
+    const userId = req.user._id;
+    const messageIdString = messageId.toString();
 
     //2. Use delete method to locate and remove based off ID
-    const deleteMessage = await Message.deleteOne({
-      _id: id,
-      owner_id: req.user._id,
+
+    const roomFromMessage = await Message.findOne({
+      _id: messageId,
+      ownerId: userId,
     });
 
-    //3. Respond to client.
-    deleteMovie.deletedCount
-      ? res.status(200).json({ message: "Movie removed" })
-      : res.status(404).json({ message: "No movie in collection" });
+    const deleteMessage = await Message.deleteOne({
+      _id: messageId,
+      ownerId: userId,
+    });
 
-    // if(deleteMovie.deletedCount) {
-    //     res.status(200).json({
-    //         message: 'Movie removed'
-    //     })
-    // } else {
-    //     res.status(404).json({
-    //         message: "No movie in collection"
-    //     })
-    // }
+    if (!deleteMessage) {
+      return res
+        .status(404)
+        .json({ message: "Invalid Message/Owner Combination" });
+    }
+
+    const roomIdString = roomFromMessage.roomId.toString();
+    log(roomIdString);
+
+    const deleteRoomMessage = await Room.findOneAndUpdate(
+      {
+        _id: roomIdString,
+      },
+      { $pull: { messages: { id: messageIdString } } },
+      { new: true }
+    );
+
+    if (!deleteRoomMessage) {
+      return res
+        .status(404)
+        .json({ message: "Invalid Message/Room Combination" });
+    }
+    //3. Respond to client.
+    res.status(200).json({ message: "Message has been deleted" });
   } catch (err) {
     error(res, err);
   }

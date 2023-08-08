@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Message = require('../models/message.model');
+const Message = require("../models/message.model");
 
 const RoomSchema = new mongoose.Schema({
   title: {
@@ -10,15 +10,14 @@ const RoomSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  messages: [Object],
+  messages: [{ id: String, text: String, date: Date }],
   ownerId: {
     type: mongoose.Types.ObjectId,
-    ref: "user"
+    ref: "user",
   },
   ownerName: {
-    type: String
-  }
-
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("Room", RoomSchema);
