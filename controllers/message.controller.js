@@ -6,36 +6,37 @@ const { error, success, incomplete } = require("../helpers");
 const log = console.log;
 
 //TODO POST - create a message for a room
-router.post("/:ROOMID/", validateSession, async (req, res) => {
+router.post('/', validateSession, async (req, res) => {
+
   try {
-    //1. Pull data from client (body)
-    const { text } = req.body;
-    const roomId = req.params.ROOMID;
-    const ownerId = req.user._id;
-    //2. Create a new object using the Model
+      //1. Pull data from client (body)
+      const { text, room_id } = req.body;
+      const ownerId = req.user.id;
 
-    const message = new Message({
-      date: new Date(),
-      text: text,
-      ownerId: ownerId,
-      roomId: roomId,
-    });
-
-    //3. Use mongoose method to save to MongoDB
-    const newMessage = await message.save();
-    const roomMessage = {
-      id: newMessage.id,
+      //2. Create new object using the Model
+      const message = new Message({
+          date: new Date(),
+          text,
+          owner_id: ownerId, // declared above
+          room_id: room_id,
+      });
+      
+      //3. Use mongoose method to save to MongoDB
+      const newMessage = await message.save();
+      const roomMessage = {
+      id: newMessage._id,
       text: newMessage.text,
       date: newMessage.date,
-    };
-    await Room.findOneAndUpdate(
-      { _id: roomId },
+      messageSender: req.user.username,
+      };
+      await Room.findOneAndUpdate(
+      { _id: room_id },
       { $push: { messages: roomMessage } }
-    );
+      );
 
-    newMessage ? success(res, newMessage) : incomplete(res);
+      newMessage ? success(res, newMessage) : incomplete(res);
   } catch (err) {
-    error(res, err);
+      error(res, err);
   }
 });
 
@@ -45,6 +46,19 @@ router.get("/:ROOMID/", async (req, res) => {
   try {
     const roomId = req.params.ROOMID;
     const getAllMessages = await Message.find({ roomId: roomId });
+
+    getAllMessages ? success(res, getAllMessages) : incomplete(res);
+  } catch (err) {
+    error(res, err);
+  }
+});
+
+//TODO GET All of user's messgages
+
+router.get("/:USERID/", async (req, res) => {
+  try {
+    const userId = req.params.USERID;
+    const getAllMessages = await Message.find({ userId: ownerId });
 
     getAllMessages ? success(res, getAllMessages) : incomplete(res);
   } catch (err) {

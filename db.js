@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const MONGODB = process.env.MONGODB;
+const MONGODB = process.env.MONGO;
 const COLL = process.env.COLL;
 
 const log = console.log;

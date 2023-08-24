@@ -58,4 +58,26 @@ router.post("/login", async (req, res) => {
   }
 });
 
+//getting user data from database
+router.get("/info", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!user || !passwordMatch) throw new Error("That combination of Email and Password does not match");
+    res.status(200).json({
+      username
+      
+
+    })
+    console.log('username: ', username)
+
+
+  } catch (err) {
+    res.status(500).json({
+      error:err.message,
+    })
+  }
+})
+
 module.exports = router;
