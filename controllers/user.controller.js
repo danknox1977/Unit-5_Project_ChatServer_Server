@@ -4,7 +4,7 @@ const { User } = require("../models")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT;
-const log = console.log;
+
 
 const testingBcrypt = (password) => {
   let encrypt = bcrypt.hashSync(password, 10);
@@ -59,18 +59,20 @@ router.post("/login", async (req, res) => {
 });
 
 //getting user data from database
-router.get("/info", async (req, res) => {
+router.get("/info/:EMAIL", async (req, res) => {
   try {
-    const { email, password } = req.body;
+   
+    const email = req.params.EMAIL;
+    console.log(email)
     const user = await User.findOne({ email: email });
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!user || !passwordMatch) throw new Error("That combination of Email and Password does not match");
+    console.log(user.username)
+    if (!user) throw new Error("Email does not match with any user");
     res.status(200).json({
-      username
+    username: user.username
       
 
     })
-    console.log('username: ', username)
+   
 
 
   } catch (err) {
