@@ -10,13 +10,16 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  ownerId: {
+  owner_Id: {
     type: mongoose.Types.ObjectId,
     ref: "user",
   },
-  roomId: {
+  room_Id: {
     type: mongoose.Types.ObjectId,
     ref: "room",
+  },
+  username: {
+    type: String,
   },
 });
 

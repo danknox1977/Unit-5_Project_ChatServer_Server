@@ -6,19 +6,23 @@ const { error, success, incomplete } = require("../helpers");
 const log = console.log;
 
 //TODO POST - create a message for a room
-router.post('/', validateSession, async (req, res) => {
+router.post('/:room_Id', validateSession, async (req, res) => {
 
   try {
       //1. Pull data from client (body)
-      const { text, room_id } = req.body;
-      const ownerId = req.user.id;
+      const { text } = req.body;
+      const room_Id = req.params.room_Id;
+      const owner_Id = req.user.id;
+      const username = req.user.username
+      console.log(username)
 
       //2. Create new object using the Model
       const message = new Message({
           date: new Date(),
           text,
-          owner_id: ownerId, // declared above
-          room_id: room_id,
+          owner_Id: owner_Id, // declared above
+          room_Id: room_Id,
+          username: username,
       });
       
       //3. Use mongoose method to save to MongoDB
@@ -27,10 +31,10 @@ router.post('/', validateSession, async (req, res) => {
       id: newMessage._id,
       text: newMessage.text,
       date: newMessage.date,
-      messageSender: req.user.username,
+      username: newMessage.username,
       };
       await Room.findOneAndUpdate(
-      { _id: room_id },
+      { _id: room_Id },
       { $push: { messages: roomMessage } }
       );
 
@@ -42,10 +46,10 @@ router.post('/', validateSession, async (req, res) => {
 
 //TODO GET All of room's messgages
 
-router.get("/:ROOMID/", async (req, res) => {
+router.get("/:room_Id/", async (req, res) => {
   try {
-    const roomId = req.params.ROOMID;
-    const getAllMessages = await Message.find({ roomId: roomId });
+    const room_Id = req.params.room_Id;
+    const getAllMessages = await Message.find({ room_Id: room_Id });
 
     getAllMessages ? success(res, getAllMessages) : incomplete(res);
   } catch (err) {
@@ -58,7 +62,7 @@ router.get("/:ROOMID/", async (req, res) => {
 router.get("/:USERID/", async (req, res) => {
   try {
     const userId = req.params.USERID;
-    const getAllMessages = await Message.find({ userId: ownerId });
+    const getAllMessages = await Message.find({ userId: owner_Id });
 
     getAllMessages ? success(res, getAllMessages) : incomplete(res);
   } catch (err) {
@@ -82,7 +86,7 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
     //3. Use method to locate document based off ID and pass in new info.
 
     const updatedMessage = await Message.findOneAndUpdate(
-      { _id: messageId, ownerId: userId },
+      { _id: messageId, owner_Id: userId },
       updatedInfoA,
       { new: true }
     );
@@ -92,7 +96,7 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
         .json({ message: "Invalid Message/Owner Combination" });
     }
 
-    const roomIdString = updatedMessage.roomId.toString();
+    const roomIdString = updatedMessage.room_Id.toString();
 
     const roomToUpdate = await Room.findOneAndUpdate(
       { _id: roomIdString, "messages.id": messageIdString },
@@ -132,12 +136,12 @@ router.delete("/:MESSAGEID", validateSession, async (req, res) => {
 
     const roomFromMessage = await Message.findOne({
       _id: messageId,
-      ownerId: userId,
+      owner_Id: userId,
     });
 
     const deleteMessage = await Message.deleteOne({
       _id: messageId,
-      ownerId: userId,
+      owner_Id: userId,
     });
 
     if (!deleteMessage) {
@@ -146,7 +150,7 @@ router.delete("/:MESSAGEID", validateSession, async (req, res) => {
         .json({ message: "Invalid Message/Owner Combination" });
     }
 
-    const roomIdString = roomFromMessage.roomId.toString();
+    const roomIdString = roomFromMessage.room_Id.toString();
     log(roomIdString);
 
     const deleteRoomMessage = await Room.findOneAndUpdate(
