@@ -6,10 +6,6 @@ const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT;
 
 
-const testingBcrypt = (password) => {
-  let encrypt = bcrypt.hashSync(password, 10);
-  console.log("Encrypt:", encrypt);
-};
 
 router.post("/signup", async (req, res) => {
 

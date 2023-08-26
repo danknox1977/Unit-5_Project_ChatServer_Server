@@ -16,7 +16,7 @@ router.post('/createRoom', validateSession, async (req, res) => {
     try {
 
         //1. Pull data from client (body)
-        const { title, description, messages } = req.body;
+        const { title, messages, description } = req.body;
 
         const owner_Id = req.user.id;
 
@@ -36,7 +36,7 @@ router.post('/createRoom', validateSession, async (req, res) => {
         });
 
     } catch (err) {
-        errorResponse(res, err);
+        error(res, err);
     }
 });
 
@@ -56,7 +56,7 @@ router.get('/:title', validateSession, async (req, res) => {
                 message: `No room named '${title}' found.`
             });
     } catch (err) {
-        errorResponse(res, err);
+        error(res, err);
     }
 });
 
@@ -79,7 +79,7 @@ router.get('/', validateSession, async (req, res) => {
             });
         }
     } catch (err) {
-        errorResponse(res, err);
+        error(res, err);
     }
 });
 
@@ -111,7 +111,7 @@ router.get('/owner/:owner_Id', validateSession, async (req, res) => {
             });
         }
     } catch (err) {
-        errorResponse(res, err);
+        error(res, err);
     }
 });
 
@@ -144,7 +144,7 @@ router.patch('/patchRoomInfo/:id', validateSession, async (req, res) => {
         })
 
     } catch (err) {
-        errorResponse(res, err);
+        error(res, err);
     }
 });
 
@@ -167,7 +167,7 @@ router.delete('/:id', validateSession, async (req, res) => {
             })
 
     } catch (err) {
-        errorResponse(res, err);
+        error(res, err);
     }
 })
 

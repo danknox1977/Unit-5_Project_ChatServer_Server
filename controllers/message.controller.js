@@ -48,9 +48,11 @@ router.post('/:room_Id', validateSession, async (req, res) => {
 
 router.get("/:room_Id/", async (req, res) => {
   try {
-    const room_Id = req.params.room_Id;
-    const getAllMessages = await Message.find({ room_Id: room_Id });
 
+    const room_Id = req.params.room_Id
+    console.log('Inside GET all message/room: ', room_Id)
+    const getAllMessages = await Message.find({ room_Id: room_Id });
+    console.log(getAllMessages)
     getAllMessages ? success(res, getAllMessages) : incomplete(res);
   } catch (err) {
     error(res, err);
@@ -62,7 +64,7 @@ router.get("/:room_Id/", async (req, res) => {
 router.get("/:USERID/", async (req, res) => {
   try {
     const userId = req.params.USERID;
-    const getAllMessages = await Message.find({ userId: owner_Id });
+    const getAllMessages = await Message.find({ owner_Id: userId });
 
     getAllMessages ? success(res, getAllMessages) : incomplete(res);
   } catch (err) {
@@ -97,9 +99,9 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
     }
 
     const roomIdString = updatedMessage.room_Id.toString();
-
+    console.log(roomIdString)
     const roomToUpdate = await Room.findOneAndUpdate(
-      { _id: roomIdString, "messages.id": messageIdString },
+      { _id: roomIdString, "messages._id": messageIdString },
       {
         $set: {
           "messages.$.text": newText,
