@@ -14,7 +14,6 @@ router.post('/:room_Id', validateSession, async (req, res) => {
       const room_Id = req.params.room_Id;
       const owner_Id = req.user.id;
       const username = req.user.username
-      console.log(username)
 
       //2. Create new object using the Model
       const message = new Message({
@@ -50,9 +49,7 @@ router.get("/:room_Id/", async (req, res) => {
   try {
 
     const room_Id = req.params.room_Id
-    console.log('Inside GET all message/room: ', room_Id)
     const getAllMessages = await Message.find({ room_Id: room_Id });
-    console.log(getAllMessages)
     getAllMessages ? success(res, getAllMessages) : incomplete(res);
   } catch (err) {
     error(res, err);
@@ -81,9 +78,7 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
     const newText = req.body.text;
     const userId = req.user._id;
     const updatedInfoA = { text: newText, date: new Date() };
-
     const messageIdString = messageId.toString();
-    // const textString = newText.toString();
 
     //3. Use method to locate document based off ID and pass in new info.
 
@@ -99,7 +94,6 @@ router.patch("/:MESSAGEID", validateSession, async (req, res) => {
     }
 
     const roomIdString = updatedMessage.room_Id.toString();
-    console.log(roomIdString)
     const roomToUpdate = await Room.findOneAndUpdate(
       { _id: roomIdString, "messages._id": messageIdString },
       {

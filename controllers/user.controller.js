@@ -5,8 +5,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT;
 
-
-
 router.post("/signup", async (req, res) => {
 
   try {
@@ -17,7 +15,6 @@ router.post("/signup", async (req, res) => {
       password: bcrypt.hashSync(req.body.password, 13),
     });
     const newUser = await user.save();
-
     const token = jwt.sign({ id: newUser._id }, SECRET, {
       expiresIn: "1 day",
     });
@@ -49,11 +46,6 @@ router.post("/login", async (req, res) => {
           creatorId,
           token
       })
-    // res.status(200).json({
-    //     message: `Success!`,
-    //     user,
-    //     token
-    // })
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -66,18 +58,11 @@ router.get("/info/:EMAIL", async (req, res) => {
   try {
    
     const email = req.params.EMAIL;
-    console.log(email)
     const user = await User.findOne({ email: email });
-    console.log(user.username)
     if (!user) throw new Error("Email does not match with any user");
     res.status(200).json({
     username: user.username
-      
-
     })
-   
-
-
   } catch (err) {
     res.status(500).json({
       error:err.message,

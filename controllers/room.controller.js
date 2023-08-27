@@ -88,9 +88,7 @@ router.get('/owner/:owner_Id', validateSession, async (req, res) => {
         try {
 
         //1. Pull value from the body
-        const { owner_Id } = req.params;
-        // const { ownerName } = req.room.ownerName;
-        
+        const { owner_Id } = req.params;        
         const getAllByOwner = await Room.find({ owner_Id }).populate('owner_Id', 'ownerName');
 
         if (getAllByOwner.length > 0) {
