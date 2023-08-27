@@ -13,7 +13,7 @@ const RoomSchema = new mongoose.Schema({
   messages: [{ _id: String, text: String, date: Date }],
   owner_Id: {
     type: mongoose.Types.ObjectId,
-    ref: "user",
+    ref: "User",
   },
   ownerName: {
     type: String,
